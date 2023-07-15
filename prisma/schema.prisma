@@ -1,71 +1,74 @@
 datasource db {
-  provider     = "mongodb"
-  url          = env("MONGODB_URI")
-  relationMode = "prisma"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
+// datasource db {
+//   provider = "sqlite"
+//   url = env("DATABASE_URL")
+// }
 
 generator client {
   provider = "prisma-client-js"
 }
 
 model User {
-  id       String   @id @map("_id")
-  name     String?
-  bio      String?
-  email    String?  @unique
-  github   String?  @unique
-  twitter  String?  @unique
-  npub     String?  @unique
-  discord  String?  @unique
-  lud06    String?
-  lud16    LNURL?
-  lnbits   LNBits?
-  relayIDs String[] @db.ObjectId
-  relays   Relay[]  @relation(fields: [relayIDs], references: [id])
-  cards    Card[]
-  wallet   Wallet?
-  otToken  OTToken?
+  id      Int      @id @default(autoincrement())
+  name    String?
+  bio     String?
+  email   String?  @unique
+  github  String?  @unique
+  twitter String?  @unique
+  npub    String?  @unique
+  discord String?  @unique
+  lud06   String?
+  lud16   LNURL?
+  lnbits  LNBits?
+  relays  Relay[]
+  cards   Card[]
+  wallet  Wallet?
+  otToken OTToken?
 }
 
 model LNBits {
-  id        String  @id @map("_id")
-  userId    String  @unique
+  id        Int     @id @default(autoincrement())
+  userId    Int     @unique
   user      User    @relation(fields: [userId], references: [id])
   lndhubUrl String?
   adminKey  String
 }
 
 model LNURL {
-  id             String  @id @map("_id")
+  id             Int     @id @default(autoincrement())
+  userId         Int     @unique
   user           User    @relation(fields: [userId], references: [id])
-  userId         String  @unique
   tag            String
   callback       String?
   minSendable    Int
   maxSendable    Int
   metadata       String
   commentAllowed Int
-  payerData      Json?
+  payerData      String?
 }
 
 model Relay {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  name    String   @unique
-  userIDs String[]
-  users   User[]   @relation(fields: [userIDs], references: [id])
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
 }
 
 model OTToken {
-  id         String   @id @map("_id")
+  id         Int      @id @default(autoincrement())
   validUntil DateTime
-  userId     String   @unique
+  userId     Int      @unique
   user       User     @relation(fields: [userId], references: [id])
 }
 
 model Card {
-  id     String     @id @map("_id")
-  status CardStatus @default(BLANK)
-  userId String?
+  id     Int        @id @default(autoincrement())
+  // status String
+  status CardStatus
+  userId Int?
   user   User?      @relation(fields: [userId], references: [id])
   wallet Wallet?
   uuid   String     @unique
@@ -76,12 +79,12 @@ model Card {
 }
 
 model Wallet {
-  id     String  @id @map("_id")
-  userId String  @unique
-  cardId String? @unique
-  user   User?   @relation(fields: [userId], references: [id])
-  card   Card?   @relation(fields: [cardId], references: [id])
-  uuid   String  @unique
+  id     Int    @id @default(autoincrement())
+  userId Int    @unique
+  cardId Int?   @unique
+  user   User?  @relation(fields: [userId], references: [id])
+  card   Card?  @relation(fields: [cardId], references: [id])
+  uuid   String @unique
 }
 
 enum CardStatus {
